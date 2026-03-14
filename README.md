@@ -2,9 +2,9 @@
 
 **Ask business questions in plain English. Get SQL + insights instantly.**
 
-Built by [Your Name] | [Your LinkedIn] | [Your Portfolio]
+Built by Neema | [LinkedIn](https://www.linkedin.com/in/neema-mv/) | [Portfolio](https://neema-madayi-veetil-o7wk4b5.gamma.site)
 
-![Demo](demo-screenshot.png)
+![Demo](demo-screenshot.jpeg)
 
 ## 🎯 What It Does
 
@@ -15,7 +15,7 @@ Built by [Your Name] | [Your LinkedIn] | [Your Portfolio]
 
 ## 🚀 Live Demo
 
-**Try it now**: [your-url.vercel.app]
+**Try it now**: [ai-analytics-assistant.vercel.app](https://ai-analytics-assistant-seven.vercel.app)
 
 ## 💡 Use Cases
 
@@ -138,15 +138,15 @@ MIT License - Feel free to use for your own portfolio!
 
 ## 👤 About
 
-Built by **[Your Name]** as a demonstration of:
+Built by **[Neema]** as a demonstration of:
 - AI/LLM integration skills
 - Frontend development (React)
 - Business intelligence domain knowledge
 - Product thinking
 
-**Portfolio**: [your-portfolio.com]
-**LinkedIn**: [linkedin.com/in/yourprofile]
-**Email**: [your-email@example.com]
+**Portfolio**: [my-portfolio.com](https://neema-madayi-veetil-o7wk4b5.gamma.site)
+**LinkedIn**: https://www.linkedin.com/in/neema-mv/
+**Email**: mvneema10@example.com
 
 ---
 
