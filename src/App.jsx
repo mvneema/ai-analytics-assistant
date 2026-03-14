@@ -24,6 +24,144 @@ const EXAMPLE_QUESTIONS = [
   "Compare year-over-year revenue growth",
 ];
 
+// Demo mode responses - works without API key
+const DEMO_RESPONSES = {
+  "what were total sales by region last quarter?": {
+    sql: `SELECT 
+  region,
+  SUM(revenue) as total_revenue,
+  COUNT(DISTINCT sale_id) as total_orders,
+  ROUND(AVG(revenue), 2) as avg_order_value
+FROM sales
+WHERE sale_date >= DATE_TRUNC('quarter', CURRENT_DATE - INTERVAL '3 months')
+  AND sale_date < DATE_TRUNC('quarter', CURRENT_DATE)
+GROUP BY region
+ORDER BY total_revenue DESC;`,
+    results: [
+      { region: 'West', total_revenue: 1560000, total_orders: 3420, avg_order_value: 456.14 },
+      { region: 'North', total_revenue: 1450000, total_orders: 3285, avg_order_value: 441.39 },
+      { region: 'South', total_revenue: 1320000, total_orders: 2987, avg_order_value: 441.98 },
+      { region: 'East', total_revenue: 1180000, total_orders: 2756, avg_order_value: 428.16 }
+    ],
+    explanation: `## Summary
+Last quarter showed strong performance across all regions, with total sales of $5.51M. The West region led with $1.56M in revenue, representing 28.3% of total sales.
+
+## Key Insights
+- **West region dominance**: Generated the highest revenue ($1.56M) and order volume (3,420 orders)
+- **Consistent average order values**: All regions maintained similar AOV around $440, indicating consistent pricing strategy
+- **Geographic opportunity**: East region has lowest performance - potential for targeted growth initiatives
+
+## Recommendation
+Focus on scaling successful West region strategies to East region markets. Consider regional marketing campaigns to boost East region order volume by 20-25% next quarter.`
+  },
+  "show me the top 10 products by revenue": {
+    sql: `SELECT 
+  p.product_id,
+  p.product_name,
+  p.category,
+  SUM(s.revenue) as total_revenue,
+  SUM(s.quantity) as units_sold,
+  ROUND(SUM(s.revenue) / SUM(s.quantity), 2) as avg_price
+FROM sales s
+JOIN products p ON s.product_id = p.product_id
+GROUP BY p.product_id, p.product_name, p.category
+ORDER BY total_revenue DESC
+LIMIT 10;`,
+    results: [
+      { product_id: 'P001', product_name: 'Premium Laptop Pro', category: 'Electronics', total_revenue: 456000, units_sold: 380, avg_price: 1200.00 },
+      { product_id: 'P045', product_name: 'Wireless Headphones X', category: 'Electronics', total_revenue: 389000, units_sold: 1945, avg_price: 200.00 },
+      { product_id: 'P023', product_name: 'Smart Watch Ultra', category: 'Wearables', total_revenue: 342000, units_sold: 855, avg_price: 400.00 },
+      { product_id: 'P067', product_name: 'Office Chair Deluxe', category: 'Furniture', total_revenue: 298000, units_sold: 745, avg_price: 400.00 },
+      { product_id: 'P089', product_name: 'Gaming Console Pro', category: 'Electronics', total_revenue: 267000, units_sold: 534, avg_price: 500.00 },
+      { product_id: 'P012', product_name: '4K Monitor 32"', category: 'Electronics', total_revenue: 234000, units_sold: 390, avg_price: 600.00 },
+      { product_id: 'P056', product_name: 'Desk Lamp LED', category: 'Home', total_revenue: 187000, units_sold: 2337, avg_price: 80.00 },
+      { product_id: 'P034', product_name: 'Mechanical Keyboard', category: 'Accessories', total_revenue: 156000, units_sold: 1040, avg_price: 150.00 },
+      { product_id: 'P078', product_name: 'Webcam HD Pro', category: 'Electronics', total_revenue: 134000, units_sold: 670, avg_price: 200.00 },
+      { product_id: 'P091', product_name: 'Mouse Wireless Pro', category: 'Accessories', total_revenue: 112000, units_sold: 1867, avg_price: 60.00 }
+    ],
+    explanation: `## Summary
+Electronics dominate the top revenue generators, with the Premium Laptop Pro leading at $456K. The top 10 products collectively generated $2.58M in revenue.
+
+## Key Insights
+- **Electronics category strength**: 6 of top 10 products are electronics, representing 65% of top-tier revenue
+- **High-value items perform well**: Premium Laptop Pro ($1,200 avg) shows strong demand for quality products
+- **Volume sellers important**: Desk Lamp LED sold 2,337 units despite lower price point, demonstrating importance of accessible products
+- **Price point sweet spot**: Products in $200-$600 range show consistent strong performance
+
+## Recommendations
+1. Expand premium electronics line - high revenue per unit with strong sell-through
+2. Bundle complementary products (laptop + mouse + keyboard) to increase basket size
+3. Stock up on Wireless Headphones X ahead of holiday season - highest volume seller`
+  },
+  "which customer segment has the highest average order value?": {
+    sql: `SELECT 
+  c.segment,
+  COUNT(DISTINCT s.sale_id) as total_orders,
+  COUNT(DISTINCT s.customer_id) as unique_customers,
+  SUM(s.revenue) as total_revenue,
+  ROUND(AVG(s.revenue), 2) as avg_order_value,
+  ROUND(SUM(s.revenue) / COUNT(DISTINCT s.customer_id), 2) as revenue_per_customer
+FROM sales s
+JOIN customers c ON s.customer_id = c.customer_id
+GROUP BY c.segment
+ORDER BY avg_order_value DESC;`,
+    results: [
+      { segment: 'Enterprise', total_orders: 1245, unique_customers: 89, total_revenue: 2340000, avg_order_value: 1879.52, revenue_per_customer: 26292.13 },
+      { segment: 'Premium', total_orders: 2890, unique_customers: 456, total_revenue: 2156000, avg_order_value: 746.02, revenue_per_customer: 4728.07 },
+      { segment: 'Standard', total_orders: 5670, unique_customers: 1834, total_revenue: 1890000, avg_order_value: 333.33, revenue_per_customer: 1030.54 },
+      { segment: 'Basic', total_orders: 3421, unique_customers: 2145, total_revenue: 625000, avg_order_value: 182.69, revenue_per_customer: 291.38 }
+    ],
+    explanation: `## Summary
+Enterprise segment shows dramatically higher AOV at $1,879.52, nearly 2.5x higher than Premium segment and 10x higher than Basic segment.
+
+## Key Insights
+- **Enterprise dominates value**: Despite only 89 customers, Enterprise generates $2.34M (33% of total revenue)
+- **Revenue concentration**: Enterprise customers average $26K lifetime value vs $291 for Basic
+- **Volume vs. Value trade-off**: Basic segment has most customers (2,145) but lowest revenue contribution
+- **Premium sweet spot**: 456 Premium customers generate nearly as much as 1,834 Standard customers
+
+## Recommendations
+1. **Prioritize Enterprise retention**: Losing even one Enterprise customer = losing 90 Basic customers in revenue
+2. **Upgrade path from Premium**: Create targeted campaigns to move Premium customers to Enterprise tier
+3. **Basic segment efficiency**: Automate Basic customer service to maintain profitability at lower AOV`
+  },
+  "compare year-over-year revenue growth": {
+    sql: `SELECT 
+  DATE_TRUNC('month', sale_date) as month,
+  EXTRACT(YEAR FROM sale_date) as year,
+  SUM(revenue) as monthly_revenue,
+  LAG(SUM(revenue)) OVER (PARTITION BY EXTRACT(MONTH FROM sale_date) ORDER BY EXTRACT(YEAR FROM sale_date)) as prev_year_revenue,
+  ROUND(((SUM(revenue) - LAG(SUM(revenue)) OVER (PARTITION BY EXTRACT(MONTH FROM sale_date) ORDER BY EXTRACT(YEAR FROM sale_date))) / 
+         LAG(SUM(revenue)) OVER (PARTITION BY EXTRACT(MONTH FROM sale_date) ORDER BY EXTRACT(YEAR FROM sale_date))) * 100, 2) as yoy_growth_pct
+FROM sales
+WHERE sale_date >= CURRENT_DATE - INTERVAL '2 years'
+GROUP BY DATE_TRUNC('month', sale_date), EXTRACT(YEAR FROM sale_date)
+ORDER BY month DESC
+LIMIT 12;`,
+    results: [
+      { month: '2026-02-01', year: 2026, monthly_revenue: 1245000, prev_year_revenue: 1089000, yoy_growth_pct: 14.32 },
+      { month: '2026-01-01', year: 2026, monthly_revenue: 1156000, prev_year_revenue: 1023000, yoy_growth_pct: 13.00 },
+      { month: '2025-12-01', year: 2025, monthly_revenue: 1523000, prev_year_revenue: 1287000, yoy_growth_pct: 18.34 },
+      { month: '2025-11-01', year: 2025, monthly_revenue: 1398000, prev_year_revenue: 1198000, yoy_growth_pct: 16.69 },
+      { month: '2025-10-01', year: 2025, monthly_revenue: 1287000, prev_year_revenue: 1134000, yoy_growth_pct: 13.49 },
+      { month: '2025-09-01', year: 2025, monthly_revenue: 1198000, prev_year_revenue: 1067000, yoy_growth_pct: 12.28 }
+    ],
+    explanation: `## Summary
+Strong year-over-year growth trend with consistent double-digit increases. December 2025 showed exceptional performance with 18.34% YoY growth.
+
+## Key Insights
+- **Accelerating growth**: Growth rate increased from 12.28% (Sept) to 18.34% (Dec), showing positive momentum
+- **Holiday season strength**: Q4 2025 outperformed Q4 2024 by 16%+ across all months
+- **Sustained performance**: All months show positive YoY growth above 12%, indicating healthy business trajectory
+- **Recent trend**: First two months of 2026 maintaining 13-14% growth rate
+
+## Recommendations
+1. **Capitalize on momentum**: Current growth rate suggests opportunity to increase inventory and marketing spend
+2. **Analyze December drivers**: Investigate what drove 18% growth to replicate in other periods
+3. **Set realistic targets**: Based on trend, aim for 15% YoY growth for 2026 overall`
+  }
+};
+
 export default function AnalyticsAssistant() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -42,80 +180,31 @@ export default function AnalyticsAssistant() {
   const generateSQL = async (question) => {
     setLoading(true);
     
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: `You are a SQL expert for a business analytics database. Generate a SQL query to answer the following question.
-
-Database Schema:
-${Object.entries(SAMPLE_SCHEMA).map(([table, info]) => 
-  `Table: ${table}\nColumns: ${info.sample_data}`
-).join('\n\n')}
-
-Question: ${question}
-
-Respond with ONLY the SQL query, no explanation. Make it PostgreSQL compatible.`
-          }]
-        })
-      });
-
-      const data = await response.json();
-      const sqlQuery = data.content.find(c => c.type === 'text')?.text.trim() || '';
-      
-      // Clean up SQL query (remove markdown code blocks if present)
-      const cleanSQL = sqlQuery.replace(/```sql\n?/g, '').replace(/```\n?/g, '').trim();
-      
-      return cleanSQL;
-    } catch (error) {
-      console.error('Error generating SQL:', error);
-      return null;
+    // Check if we have a demo response for this question
+    const normalizedQuestion = question.toLowerCase().trim();
+    const demoResponse = DEMO_RESPONSES[normalizedQuestion];
+    
+    if (demoResponse) {
+      return demoResponse;
     }
-  };
-
-  const explainResults = async (question, sql, mockResults) => {
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: `You are a business analyst. Provide a concise, insightful explanation of these query results.
-
-Original Question: ${question}
-
-SQL Query: ${sql}
-
-Results: ${JSON.stringify(mockResults, null, 2)}
-
-Provide:
-1. A brief summary (2-3 sentences)
-2. Key insights or patterns
-3. One actionable recommendation
-
-Be concise and business-focused.`
-          }]
-        })
-      });
-
-      const data = await response.json();
-      return data.content.find(c => c.type === 'text')?.text || 'Analysis complete.';
-    } catch (error) {
-      console.error('Error explaining results:', error);
-      return 'Query executed successfully.';
+    
+    // Try fuzzy matching for similar questions
+    for (const [key, value] of Object.entries(DEMO_RESPONSES)) {
+      if (normalizedQuestion.includes(key.split(' ').slice(0, 3).join(' '))) {
+        return value;
+      }
     }
+    
+    // Default response for unmatched questions
+    return {
+      sql: `SELECT * FROM sales LIMIT 10;`,
+      results: [
+        { sale_id: 1, product_id: 'P001', customer_id: 'C123', revenue: 1200, region: 'North' },
+        { sale_id: 2, product_id: 'P045', customer_id: 'C456', revenue: 200, region: 'South' },
+        { sale_id: 3, product_id: 'P023', customer_id: 'C789', revenue: 400, region: 'East' }
+      ],
+      explanation: `This is a demo response. Try asking one of the example questions above for detailed AI-generated insights!\n\nThis demo showcases:\n✅ SQL query generation\n✅ Data visualization\n✅ AI-powered analysis\n\nFor production use with your real database, you would connect the Claude API.`
+    };
   };
 
   const handleSubmit = async (e, customQuestion = null) => {
@@ -128,35 +217,14 @@ Be concise and business-focused.`
     setMessages(prev => [...prev, userMessage]);
     setInput('');
 
-    // Generate SQL
-    const sql = await generateSQL(question);
+    // Generate SQL and get response
+    const response = await generateSQL(question);
     
-    if (!sql) {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Sorry, I had trouble generating a query for that question. Could you rephrase it?',
-        error: true
-      }]);
-      setLoading(false);
-      return;
-    }
-
-    // Mock results (in production, you'd execute the SQL against your database)
-    const mockResults = [
-      { region: 'North', total_sales: 145000, pct_growth: 12.5 },
-      { region: 'South', total_sales: 132000, pct_growth: 8.3 },
-      { region: 'East', total_sales: 118000, pct_growth: 15.2 },
-      { region: 'West', total_sales: 156000, pct_growth: 10.1 }
-    ];
-
-    // Get AI explanation
-    const explanation = await explainResults(question, sql, mockResults);
-
     setMessages(prev => [...prev, {
       role: 'assistant',
-      sql,
-      results: mockResults,
-      explanation
+      sql: response.sql,
+      results: response.results,
+      explanation: response.explanation
     }]);
 
     setLoading(false);
@@ -182,9 +250,10 @@ Be concise and business-focused.`
               <p className="text-xs text-slate-400">Ask questions, get SQL + insights</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <Database className="w-4 h-4" />
-            <span className="hidden sm:inline">Connected to Demo DB</span>
+          <div className="flex items-center gap-2 text-sm">
+            <div className="bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-xs border border-green-500/20">
+              ✓ Demo Mode
+            </div>
           </div>
         </div>
       </header>
