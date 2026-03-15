@@ -15,6 +15,8 @@ Built by Neema | [LinkedIn](https://www.linkedin.com/in/neema-mv/) | [Portfolio]
 
 ## 🚀 Live Demo
 
+**Loom Video**: [Demo by Neema](https://www.loom.com/share/ee7366624f23479191a2efd1a76e88f8)
+
 **Try it now**: [ai-analytics-assistant.vercel.app](https://ai-analytics-assistant-seven.vercel.app)
 
 ## 💡 Use Cases
